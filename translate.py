@@ -9,16 +9,11 @@ from transformers import GenerationConfig
 
 model_name = "nlp-with-deeplearning/enko-t5-small-v0"
 loaded = False
-model = None
-tokenizer = None
-device = None
+model = T5ForConditionalGeneration.from_pretrained("nlp-with-deeplearning/enko-t5-small-v0")
+tokenizer = T5TokenizerFast.from_pretrained("nlp-with-deeplearning/enko-t5-small-v0")
+device = model.parameters().__next__().device
 
 def translate(model_name, sentences):
-    if not loaded:
-        model = T5ForConditionalGeneration.from_pretrained(model_name)
-        tokenizer = T5TokenizerFast.from_pretrained(model_name)
-        device = model.parameters().__next__().device
-
     input_ids = tokenizer.batch_encode_plus(
         sentences,
         return_tensors="pt",
@@ -55,6 +50,7 @@ def translate(model_name, sentences):
                 skip_special_tokens=False,
             )
         )
+        print(outputs)
 
     return outputs
 

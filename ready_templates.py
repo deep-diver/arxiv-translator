@@ -33,13 +33,13 @@ def main(en_mmd_fn, html_tpl_fn, paper_dir):
     en_result_html_lines = html_lines[:6] + [wrap(line) for line in en_mmd_lines] + html_lines[6:]
     en_result_html = "\n".join(en_result_html_lines)
 
-    with open(os.path.join(paper_dir, arxiv_id, "paper.en.html"), "w") as f:
+    with open(os.path.join(paper_dir, "paper.en.html"), "w") as f:
         f.write(en_result_html)
 
     ko_result_html_lines = html_lines[:6] + [wrap(line) for line in ko_mmd_lines] + html_lines[6:]
     ko_result_html = "\n".join(ko_result_html_lines)
 
-    with open(os.path.join(paper_dir, arxiv_id, "paper.ko.html"), "w") as f:
+    with open(os.path.join(paper_dir, "paper.ko.html"), "w") as f:
         f.write(ko_result_html)
 
 if __name__ == "__main__":

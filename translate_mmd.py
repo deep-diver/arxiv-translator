@@ -10,7 +10,6 @@ sys.path.append("/home/khkim/workspace/original_tech_demo")
 
 from translate import translate_lines
 
-
 def exclude_determiner(line):
     if len(line.split(" ")) <= 2:
         return True
@@ -57,22 +56,26 @@ def translate_lines_async(idx, model_name, line, batch_size=32):
 
 
 def translate_mmd(input_fn, model_names, chunksize=10):
+    print(1)
     lines = []
 
     with open(input_fn, "r") as f:
         for line in f:
             lines.append(line.replace("\n", ""))
 
+    print(2)
     print(f"Number of lines: {len(lines)}")
 
     tasks = []
     for idx, line in enumerate(lines):
         tasks.append((idx, model_names[idx % len(model_names)], line))
 
+    print(3)
     output_fn = input_fn.split(".")[:-1] + ["ko"] + [input_fn.split(".")[-1]]
     output_fn = ".".join(output_fn)
     print(f"Output file: {output_fn}")
 
+    print(4)
     with open(output_fn, "w") as f:
         for sub_tasks in tqdm(
             [tasks[i : i + chunksize * 10] for i in range(0, len(tasks), chunksize * 10)]
@@ -84,6 +87,7 @@ def translate_mmd(input_fn, model_names, chunksize=10):
                 pm_processes=len(model_names),
                 pm_chunksize=chunksize,
             )
+            print(5)
 
             for line in translated_lines:
                 f.write(line + "\n")
@@ -98,8 +102,9 @@ if __name__ == "__main__":
     translate_mmd(
         input_fn,
         model_names=[
-            "enko_20230719",
-            "enko_20230719_2",
-            "enko_20230719_3",
+            "nlp-with-deeplearning/enko-t5-small-v0"
+            # "enko_20230719",
+            # "enko_20230719_2",
+            # "enko_20230719_3",
         ],
     )

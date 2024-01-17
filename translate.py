@@ -50,7 +50,6 @@ def translate(model_name, sentences):
                 skip_special_tokens=False,
             )
         )
-        print(outputs)
 
     return outputs
 

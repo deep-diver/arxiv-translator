@@ -71,8 +71,7 @@ def translate_mmd(input_fn, model_name, chunksize=10):
             model_name, line=line
           )
 
-          for line in translated_lines:
-              f.write(line + "\n")          
+          f.write(translated_lines + "\n")
 
 if __name__ == "__main__":
     input_fn = sys.argv[1]

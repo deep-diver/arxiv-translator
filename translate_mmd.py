@@ -1,5 +1,6 @@
 import sys
 import logging
+import concurrent.futures
 from tqdm import tqdm
 import re
 
@@ -65,13 +66,23 @@ def translate_mmd(input_fn, model_name, chunksize=10):
     output_fn = ".".join(output_fn)
     print(f"Output file: {output_fn}")
 
-    with open(output_fn, "w") as f:
-      for line in tqdm(lines):
-          translated_lines = translate_lines_task(
-            model_name, line=line, batch_size=64
-          )
+    step_size = 3
+    batch_size = 32
+    translated_lines_list = []
+        
+    for i in tqdm(range(0, len(lines), step_size)):
+        group = lines[i:i+step_size]
+        args_list = [(model_name, group_member, batch_size) for group_member in group]
+            
+        with concurrent.futures.ThreadPoolExecutor(max_workers=step_size) as executor:
+            results = executor.map(translate_lines_task, args_list)
 
-          f.write(translated_lines + "\n")
+            for translated_lines in results:
+                translated_lines_list.append(translated_lines)
+
+    with open(output_fn, "w") as f:
+        for translated_lines in translated_lines_list:
+            f.write(translated_lines + "\n")
 
 if __name__ == "__main__":
     input_fn = sys.argv[1]

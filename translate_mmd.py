@@ -68,7 +68,7 @@ def translate_mmd(input_fn, model_name, chunksize=10):
     with open(output_fn, "w") as f:
       for line in tqdm(lines):
           translated_lines = translate_lines_task(
-            model_name, line=line
+            model_name, line=line, batch_size=64
           )
 
           f.write(translated_lines + "\n")

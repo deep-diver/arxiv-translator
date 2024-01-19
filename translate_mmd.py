@@ -72,10 +72,12 @@ def translate_mmd(input_fn, model_name, chunksize=10):
         
     for i in tqdm(range(0, len(lines), step_size)):
         group = lines[i:i+step_size]
-        args_list = [(model_name, group_member, batch_size) for group_member in group]
+        model_names = [model_name] * len(group)
+        batch_sizes = [batch_size] * len(group)    
+        # args_list = [(model_name, group_member, batch_size) for group_member in group]
             
         with concurrent.futures.ThreadPoolExecutor(max_workers=step_size) as executor:
-            results = executor.map(translate_lines_task, args_list)
+            results = executor.map(translate_lines_task, model_names, group, batch_sizes)
 
             for translated_lines in results:
                 translated_lines_list.append(translated_lines)

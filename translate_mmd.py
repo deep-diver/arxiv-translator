@@ -66,8 +66,8 @@ def translate_mmd(input_fn, model_name, chunksize=10):
     output_fn = ".".join(output_fn)
     print(f"Output file: {output_fn}")
 
-    step_size = 3
-    batch_size = 32
+    step_size = 6
+    batch_size = 64
     translated_lines_list = []
         
     for i in tqdm(range(0, len(lines), step_size)):

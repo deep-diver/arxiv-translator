@@ -85,14 +85,14 @@ def translate_mmd(args):
 
     with open(output_fn, "w") as f:
         for sub_tasks in tqdm(
-            [tasks[i : i + chunksize * 10] for i in range(0, len(tasks), chunksize * 10)]
+            [tasks[i : i + args.chunk_size * 10] for i in range(0, len(tasks), args.chunk_size * 10)]
         ):
             translated_lines = parmap.starmap(
                 translate_lines_async,
                 sub_tasks,
                 pm_pbar=False,
                 pm_processes=args.worker_num,
-                pm_chunksize=chunksize,
+                pm_chunksize=args.chunk_size,
             )
 
             for line in translated_lines:

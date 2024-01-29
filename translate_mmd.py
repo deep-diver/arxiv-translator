@@ -5,7 +5,11 @@ import argparse
 from tqdm import tqdm
 import re
 
-sys.path.append("/home/khkim/workspace/original_tech_demo")
+import multiprocessing
+import parmap
+
+from transformers import T5TokenizerFast
+from transformers import T5ForConditionalGeneration
 
 from translate import translate_lines
 
@@ -40,7 +44,7 @@ def exclude_determiner(line):
     return False
 
 
-def translate_lines_task(model_name, line, batch_size=32, hf_token=None):
+def translate_lines_async(idx, model, line, batch_size=32):
     try:
         ret = translate_lines(model_name, line, batch_size=batch_size, exclude_determine_fn=exclude_determiner, hf_token=hf_token)
 
@@ -53,6 +57,12 @@ def translate_lines_task(model_name, line, batch_size=32, hf_token=None):
 
     return ret
 
+def instantiate_model(model_name, hf_token):
+    model = T5ForConditionalGeneration.from_pretrained(model_name, token=hf_token, device_map="auto")
+    tokenizer = T5TokenizerFast.from_pretrained(model_name, token=hf_token)
+    return {"model": model, "toeknizer": tokenizer}
+    # device = model.parameters().__next__().device
+    # print(f"device = {device}")
 
 def translate_mmd(args):
     lines = []
@@ -63,17 +73,30 @@ def translate_mmd(args):
 
     print(f"Number of lines: {len(lines)}")
 
+    tasks = []
+    models = [instantiate_model(args.model_name, args.hf_token) for _ in range(args.worker_num)]
+    
+    for idx, line in enumerate(lines):
+        tasks.append((idx, models[idx % args.worker_num], line, args.batch_size))
+    
     output_fn = args.input_filename.split(".")[:-1] + ["ko"] + [args.input_filename.split(".")[-1]]
     output_fn = ".".join(output_fn)
     print(f"Output file: {output_fn}")
 
     with open(output_fn, "w") as f:
-      for line in tqdm(lines):
-          translated_lines = translate_lines_task(
-            args.model_name, line=line, batch_size=args.batch_size, hf_token=args.hf_token
-          )
+        for sub_tasks in tqdm(
+            [tasks[i : i + chunksize * 10] for i in range(0, len(tasks), chunksize * 10)]
+        ):
+            translated_lines = parmap.starmap(
+                translate_lines_async,
+                sub_tasks,
+                pm_pbar=False,
+                pm_processes=args.worker_num,
+                pm_chunksize=chunksize,
+            )
 
-          f.write(translated_lines + "\n")
+            for line in translated_lines:
+                f.write(line + "\n")
 
 if __name__ == "__main__":
     logger = logging.getLogger()
@@ -82,6 +105,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--input-filename', type=str, default="")
     parser.add_argument('--model-name', type=str, default="nlp-with-deeplearning/enko-t5-small-v0")
+    parser.add_argument('--worker-num', type=int, default=1)
+    parser.add_argument('--chunk-size', type=int, default=10)
     parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--hf-token', type=str, default=None)
     

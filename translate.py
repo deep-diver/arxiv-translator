@@ -15,7 +15,7 @@ def translate(model_name, sentences, hf_token=None):
     global model, tokenizer, device
         
     if model is None:
-        model = T5ForConditionalGeneration.from_pretrained(model_name, token=hf_token)
+        model = T5ForConditionalGeneration.from_pretrained(model_name, token=hf_token, device_map="auto")
         tokenizer = T5TokenizerFast.from_pretrained(model_name, token=hf_token)
         device = model.parameters().__next__().device
         print(f"device = {device}")

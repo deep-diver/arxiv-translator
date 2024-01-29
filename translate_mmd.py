@@ -1,6 +1,7 @@
+import os
 import sys
 import logging
-import concurrent.futures
+import argparse
 from tqdm import tqdm
 import re
 
@@ -39,9 +40,9 @@ def exclude_determiner(line):
     return False
 
 
-def translate_lines_task(model_name, line, batch_size=32):
+def translate_lines_task(model_name, line, batch_size=32, hf_token=None):
     try:
-        ret = translate_lines(model_name, line, batch_size=batch_size, exclude_determine_fn=exclude_determiner)
+        ret = translate_lines(model_name, line, batch_size=batch_size, exclude_determine_fn=exclude_determiner, hf_token=hf_token)
 
         # restore if the line is begin with multiple spaces or tabs.
         while line.startswith(" ") or line.startswith("\t"):
@@ -53,34 +54,43 @@ def translate_lines_task(model_name, line, batch_size=32):
     return ret
 
 
-def translate_mmd(input_fn, model_name, chunksize=10):
+def translate_mmd(args):
     lines = []
 
-    with open(input_fn, "r") as f:
+    with open(args.input_filename, "r") as f:
         for line in f:
             lines.append(line.replace("\n", ""))
 
     print(f"Number of lines: {len(lines)}")
 
-    output_fn = input_fn.split(".")[:-1] + ["ko"] + [input_fn.split(".")[-1]]
+    output_fn = args.input_filename.split(".")[:-1] + ["ko"] + [args.input_filename.split(".")[-1]]
     output_fn = ".".join(output_fn)
     print(f"Output file: {output_fn}")
 
     with open(output_fn, "w") as f:
       for line in tqdm(lines):
           translated_lines = translate_lines_task(
-            model_name, line=line, batch_size=128
+            args.model_name, line=line, batch_size=args.batch_size, token=args.hf_token
           )
 
           f.write(translated_lines + "\n")
 
 if __name__ == "__main__":
-    input_fn = sys.argv[1]
-
     logger = logging.getLogger()
     logger.disabled = True
 
-    translate_mmd(
-        input_fn,
-        model_name="nlp-with-deeplearning/enko-t5-small-v0"
-    )
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input-filename', type=str, default="")
+    parser.add_argument('--model-name', type=str, default="nlp-with-deeplearning/enko-t5-small-v0")
+    parser.add_argument('--batch-size', type=int, default=128)
+    parser.add_argument('--hf-token', type=str, default=None)
+    
+    args = parser.parse_args()
+    if args.hf_token is None:
+        env_var_hf_token = os.environ.get('HF_TOKEN')
+        if env_var_hf_token is not None:
+            args.hf_token = env_var_hf_token
+            
+    print(args)
+    
+    translate_mmd(args)

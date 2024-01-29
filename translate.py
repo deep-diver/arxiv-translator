@@ -7,13 +7,19 @@ from transformers import T5TokenizerFast
 from transformers import T5ForConditionalGeneration
 from transformers import GenerationConfig
 
-model_name = "nlp-with-deeplearning/enko-t5-small-v0"
-loaded = False
-model = T5ForConditionalGeneration.from_pretrained("nlp-with-deeplearning/enko-t5-small-v0")
-tokenizer = T5TokenizerFast.from_pretrained("nlp-with-deeplearning/enko-t5-small-v0")
-device = model.parameters().__next__().device
+model = None # T5ForConditionalGeneration.from_pretrained("nlp-with-deeplearning/enko-t5-small-v0")
+tokenizer = None # T5TokenizerFast.from_pretrained("nlp-with-deeplearning/enko-t5-small-v0")
+device = None # model.parameters().__next__().device
 
-def translate(model_name, sentences):
+def translate(model_name, sentences, hf_token=None):
+    global model, tokenizer, device
+        
+    if model is None:
+        model = T5ForConditionalGeneration.from_pretrained(model_name, token=hf_token)
+        tokenizer = T5TokenizerFast.from_pretrained(model_name, token=hf_token)
+        device = model.parameters().__next__().device
+        print(f"device = {device}")
+    
     input_ids = tokenizer.batch_encode_plus(
         sentences,
         return_tensors="pt",
@@ -60,6 +66,7 @@ def translate_lines(
         exclude_determine_fn=None,
         use_kss=True,
         remove_bos_eos_pad=True,
+        hf_token=None,
     ):
     if exclude_determine_fn is None:
         exclude_determine_fn = lambda x: False
@@ -99,7 +106,7 @@ def translate_lines(
 
     translated_buffer = []
     for i in range(0, len(buffer), batch_size):
-        translated_buffer += remove_bos_eos_pad_fn(translate(model_name, buffer[i:i + batch_size]))
+        translated_buffer += remove_bos_eos_pad_fn(translate(model_name, buffer[i:i + batch_size], hf_token))
 
     translated_lines = []
     for idx, line in enumerate(lines):

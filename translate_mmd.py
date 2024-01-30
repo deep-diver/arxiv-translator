@@ -5,7 +5,7 @@ import argparse
 from tqdm import tqdm
 import re
 
-import multiprocessing
+import multiprocessing as mp
 import parmap
 
 from transformers import T5TokenizerFast
@@ -99,6 +99,8 @@ def translate_mmd(args):
                 f.write(line + "\n")
 
 if __name__ == "__main__":
+    mp.set_start_method('spawn', force=True)
+    
     logger = logging.getLogger()
     logger.disabled = True
 

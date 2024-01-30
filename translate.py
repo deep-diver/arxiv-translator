@@ -6,6 +6,8 @@ import kss
 from transformers import GenerationConfig
 
 def translate(model, sentences):
+    device = model.model.parameters().__next__().device
+    
     input_ids = model.tokenizer.batch_encode_plus(
         sentences,
         return_tensors="pt",

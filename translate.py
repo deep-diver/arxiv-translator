@@ -5,7 +5,7 @@ import kss
 
 from transformers import GenerationConfig
 
-def translate(model, sentences, hf_token=None):
+def translate(model, sentences):
     input_ids = model.tokenizer.batch_encode_plus(
         sentences,
         return_tensors="pt",
@@ -52,7 +52,6 @@ def translate_lines(
         exclude_determine_fn=None,
         use_kss=True,
         remove_bos_eos_pad=True,
-        hf_token=None,
     ):
     if exclude_determine_fn is None:
         exclude_determine_fn = lambda x: False
@@ -92,7 +91,7 @@ def translate_lines(
 
     translated_buffer = []
     for i in range(0, len(buffer), batch_size):
-        translated_buffer += remove_bos_eos_pad_fn(translate(model, buffer[i:i + batch_size], hf_token))
+        translated_buffer += remove_bos_eos_pad_fn(translate(model, buffer[i:i + batch_size]))
 
     translated_lines = []
     for idx, line in enumerate(lines):

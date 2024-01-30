@@ -53,7 +53,7 @@ def translate_lines_async(idx, model, line, batch_size=32):
             ret = line[0] + ret
             line = line[1:]
     except Exception as e:
-        print("error happend, fallback to original english text")
+        print(e)
         ret = line
 
     return ret

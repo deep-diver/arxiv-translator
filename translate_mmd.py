@@ -75,9 +75,11 @@ def translate_mmd(args):
 
     tasks = []
     models = [instantiate_model(args.model_name, args.hf_token) for _ in range(args.worker_num)]
+    print(f"models = {models}")
     
     for idx, line in enumerate(lines):
         tasks.append((idx, models[idx % args.worker_num], line, args.batch_size))
+    print(f"tasks = {tasks}")
     
     output_fn = args.input_filename.split(".")[:-1] + ["ko"] + [args.input_filename.split(".")[-1]]
     output_fn = ".".join(output_fn)
@@ -87,6 +89,7 @@ def translate_mmd(args):
         for sub_tasks in tqdm(
             [tasks[i : i + args.chunk_size * 10] for i in range(0, len(tasks), args.chunk_size * 10)]
         ):
+            print(f"sub_tasks = {sub_tasks}")
             translated_lines = parmap.starmap(
                 translate_lines_async,
                 sub_tasks,

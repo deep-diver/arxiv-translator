@@ -61,7 +61,7 @@ def translate_lines_async(idx, model, line, batch_size=32):
 def instantiate_model(model_name, hf_token):
     model = T5ForConditionalGeneration.from_pretrained(model_name, token=hf_token, device_map="auto")
     tokenizer = T5TokenizerFast.from_pretrained(model_name, token=hf_token)
-    return {"model": model, "toeknizer": tokenizer}
+    return {"model": model, "tokenizer": tokenizer}
     # device = model.parameters().__next__().device
     # print(f"device = {device}")
 

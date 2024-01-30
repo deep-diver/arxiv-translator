@@ -6,9 +6,11 @@ import kss
 from transformers import GenerationConfig
 
 def translate(model, sentences):
-    device = model.model.parameters().__next__().device
+    tokenizer = model["tokenizer"]
+    model = model["model"]
+    device = model.parameters().__next__().device
     
-    input_ids = model.tokenizer.batch_encode_plus(
+    input_ids = tokenizer.batch_encode_plus(
         sentences,
         return_tensors="pt",
         padding=True,
@@ -22,15 +24,15 @@ def translate(model, sentences):
         do_sample=False,
         num_beams=8,
         use_cache=True,
-        pad_token_id=model.tokenizer.pad_token_id,
-        bos_token_id=model.tokenizer.bos_token_id,
-        eos_token_id=model.tokenizer.eos_token_id,
-        decoder_start_token_id=model.tokenizer.bos_token_id,
+        pad_token_id=tokenizer.pad_token_id,
+        bos_token_id=tokenizer.bos_token_id,
+        eos_token_id=tokenizer.eos_token_id,
+        decoder_start_token_id=tokenizer.bos_token_id,
         repetition_penalty=1.2,
         length_penalty=1.0,
     )
 
-    beam_output = model.model.generate(
+    beam_output = model.generate(
         input_ids,
         generation_config=generation_config,
         # forced_decoder_ids=[[1, 5], [2, 9]],
@@ -39,7 +41,7 @@ def translate(model, sentences):
     outputs = []
     for i in range(len(sentences)):
         outputs.append(
-            model.tokenizer.decode(
+            tokenizer.decode(
                 beam_output[i],
                 skip_special_tokens=False,
             )

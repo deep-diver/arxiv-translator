@@ -94,8 +94,6 @@ def translate_mmd(args):
                 pm_chunksize=args.chunk_size,
             )
 
-            print(f"translated_lines = {translated_lines}")
-
             for line in translated_lines:
                 f.write(line + "\n")
 
@@ -108,7 +106,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--input-filename', type=str, default="")
     parser.add_argument('--model-name', type=str, default="nlp-with-deeplearning/enko-t5-small-v0")
-    parser.add_argument('--worker-num', type=int, default=1)
+    parser.add_argument('--worker-num', type=int, default=5)
     parser.add_argument('--chunk-size', type=int, default=10)
     parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--hf-token', type=str, default=None)

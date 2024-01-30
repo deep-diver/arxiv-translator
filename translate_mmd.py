@@ -46,7 +46,7 @@ def exclude_determiner(line):
 
 def translate_lines_async(idx, model, line, batch_size=32):
     try:
-        ret = translate_lines(model_name, line, batch_size=batch_size, exclude_determine_fn=exclude_determiner, hf_token=hf_token)
+        ret = translate_lines(model, line, batch_size=batch_size, exclude_determine_fn=exclude_determiner)
 
         # restore if the line is begin with multiple spaces or tabs.
         while line.startswith(" ") or line.startswith("\t"):
